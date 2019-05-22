@@ -1,2 +1,4 @@
+flake8
+pytest
+pytest-cov
 git+https://github.com/openstack-charmers/zaza.git#egg=zaza
-
