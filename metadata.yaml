@@ -1,19 +1,25 @@
 name: contrail-service-checks
-summary: <Fill in summary here>
+summary: This charm provides Contrail service checks for Nagios
 maintainer: Nicolas Pochet <Nicolas.Pochet@laptop>
 description: |
-  <Multi-line description here>
+  This charm provides Contrail service checks for Nagios
 tags:
-  # Replace "misc" with one or more whitelisted tags from this list:
-  # https://jujucharms.com/docs/stable/authors-charm-metadata
-  - misc
+  - contrail
+  - openstack
+  - monitoring
 subordinate: false
+series:
+- bionic
 provides:
-  provides-relation:
-    interface: interface-name
+  nrpe-external-master:
+    interface: nrpe-external-master
+    scope: container
+    optional: true
 requires:
-  requires-relation:
-    interface: interface-name
-peers:
-  peer-relation:
-    interface: interface-name
+  identity-credentials:
+    interface: keystone-credentials
+    optional: true
+extra-bindings:
+  public:
+  admin:
+  internal:
