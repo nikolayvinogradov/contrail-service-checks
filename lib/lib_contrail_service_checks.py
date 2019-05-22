@@ -60,6 +60,8 @@ class CSCHelper():
                           })
         else:
             creds['tenant_name'] = ident_creds['credentials_project']
+        contrail_analytics_vip = self.charm_config['contrail_analytics_vip']
+        creds.update({'contrail_analytics_vip': contrail_analytics_vip})
 
         return creds
 
