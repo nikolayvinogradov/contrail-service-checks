@@ -18,6 +18,7 @@ helper = CSCHelper()
 def config_changed():
     clear_flag('contrail-service-checks.configured')
 
+
 @when_not('contrail-service-checks.installed')
 @when('nrpe-external-master.available')
 def install_contrail_service_checks():
@@ -102,6 +103,7 @@ def get_credentials():
             hookenv.status_set('blocked',
                                'Missing os-credentials vars: {}'.format(error))
             return
+    creds['contrail_analytics_vip'] = helper.charm_config['contrail_analytics_vip']
     return creds
 
 
