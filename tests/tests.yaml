@@ -1,0 +1,12 @@
+charm_name: contrail-service-checks
+gate_bundles:
+  - bionic-queens
+  - bionic-rocky
+smoke_bundles:
+  - bionic-rocky
+dev_bundles:
+  - bionic-rocky
+configure:
+  - zaza.charm_tests.noop.setup.basic_setup
+tests:
+  - zaza.charm_tests.noop.tests.NoopTest

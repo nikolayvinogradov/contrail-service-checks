@@ -1,6 +1,5 @@
 from charms.reactive import when, when_not, set_flag
 
-
 @when_not('contrail-service-checks.installed')
 def install_contrail_service_checks():
     # Do your setup here.
