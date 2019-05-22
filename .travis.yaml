@@ -1,0 +1,11 @@
+sudo: true
+dist: xenial
+language: python
+python:
+  - "3.6"
+install: pip install tox-travis
+env:
+  - ENV=lint
+  - ENV=unit
+script:
+  - tox -c tox.ini -e $ENV
