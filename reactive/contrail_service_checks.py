@@ -103,7 +103,9 @@ def get_credentials():
             hookenv.status_set('blocked',
                                'Missing os-credentials vars: {}'.format(error))
             return
-    creds['contrail_analytics_vip'] = helper.charm_config['contrail_analytics_vip']
+    creds['contrail_analytics_vip'] = \
+        helper.charm_config['contrail_analytics_vip']
+
     return creds
 
 
@@ -226,7 +228,8 @@ def parse_hooks():
                 'project_name': old_creds['credentials_project'],
                 'tenant_name': old_creds['credentials_project'],
                 'user_domain_name': old_creds.get('credentials_user_domain'),
-                'project_domain_name': old_creds.get('credentials_project_domain'),
+                'project_domain_name':
+                    old_creds.get('credentials_project_domain'),
             }
             kv.set('keystonecreds', creds)
 

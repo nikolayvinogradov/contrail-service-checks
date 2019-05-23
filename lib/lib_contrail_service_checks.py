@@ -68,7 +68,8 @@ class CSCHelper():
     def get_keystone_credentials(self):
         '''retrieve keystone credentials from either config or relation data
 
-        If config 'os-crendentials' is set, return that info otherwise look for a keystonecreds relation data'
+        If config 'os-crendentials' is set, return that info otherwise look
+        for a keystonecreds relation data'
 
         :return: dict of credential information for keystone
         '''
