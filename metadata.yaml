@@ -1,6 +1,6 @@
 name: contrail-service-checks
 summary: This charm provides Contrail service checks for Nagios
-maintainer: Nicolas Pochet <Nicolas.Pochet@laptop>
+maintainer: Someone Will Maintain It <nope@nope>
 description: |
   This charm provides Contrail service checks for Nagios
 tags:

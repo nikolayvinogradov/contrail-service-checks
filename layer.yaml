@@ -11,3 +11,4 @@ options:
       - python3-openstackclient
       - python3-requests
       - python3-yaml
+repo: https://github.com/n-pochet/contrail-service-checks
