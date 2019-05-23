@@ -31,6 +31,11 @@ class CSCHelper():
     def plugins_dir(self):
         return '/usr/local/lib/nagios/plugins/'
 
+    @staticmethod
+    def common_attrs():
+        return ['username', 'password', 'region_name', 'auth_url',
+                'credentials_project']
+
     def get_os_credentials(self):
         ident_creds = config_flags_parser(self.charm_config['os-credentials'])
         if not ident_creds.get('auth_url'):
@@ -42,9 +47,7 @@ class CSCHelper():
             extra_attrs = []
             creds = {}
 
-        common_attrs = ('username password region_name auth_url'
-                        ' credentials_project').split()
-        all_attrs = common_attrs + extra_attrs
+        all_attrs = CSCHelper.common_attrs() + extra_attrs
         missing = [k for k in all_attrs if k not in ident_creds]
         if missing:
             raise CSCCredentialsError(', '.join(missing))
