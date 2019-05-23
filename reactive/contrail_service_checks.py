@@ -6,16 +6,13 @@ from charms.reactive import clear_flag, set_flag, when, when_not
 
 from lib_contrail_service_checks import (
     CSCHelper,
-    CSCCredentialsError,
-    CSCEndpointError
+    CSCCredentialsError
 )
 
 CERT_FILE = '/usr/local/share/ca-certificates/openstack-service-checks.crt'
 
 
-def helper():
-    helper = CSCHelper()
-    return helper
+helper = CSCHelper()
 
 
 @when('config.changed')
@@ -72,7 +69,7 @@ def save_creds(keystone):
         proto=keystone.auth_protocol(), host=keystone.auth_host(),
         port=keystone.auth_port(), api_url=api_url)
 
-    helper().store_keystone_credentials(creds)
+    helper.store_keystone_credentials(creds)
     set_flag('contrail-service-checks.stored-creds')
     clear_flag('contrail-service-checks.configured')
 
@@ -93,15 +90,15 @@ def get_credentials():
     keystonecreds relation data.
     """
     try:
-        creds = helper().get_os_credentials()
+        creds = helper.get_os_credentials()
     except CSCCredentialsError as error:
-        creds = helper().get_keystone_credentials()
+        creds = helper.get_keystone_credentials()
         if not creds:
             hookenv.log('render_config: No credentials yet, skipping')
             hookenv.status_set('blocked',
                                'Missing os-credentials vars: {}'.format(error))
             return
-    contrail_vip = helper().charm_config['contrail_analytics_vip']
+    contrail_vip = helper.charm_config['contrail_analytics_vip']
     creds['contrail_analytics_vip'] = contrail_vip
     return creds
 
@@ -130,8 +127,8 @@ def render_config():
         return
 
     # Fix TLS
-    if helper().charm_config['trusted_ssl_ca'].strip():
-        trusted_ssl_ca = helper().charm_config['trusted_ssl_ca'].strip()
+    if helper.charm_config['trusted_ssl_ca'].strip():
+        trusted_ssl_ca = helper.charm_config['trusted_ssl_ca'].strip()
         hookenv.log('Writing ssl ca cert:{}'.format(trusted_ssl_ca))
         cert_content = base64.b64decode(trusted_ssl_ca).decode()
         try:
@@ -149,10 +146,7 @@ def render_config():
     hookenv.log('render_config: Got credentials for'
                 ' username={}'.format(creds.get('username')))
 
-    try:
-        helper().render_checks(creds)
-    except CSCEndpointError as error:
-        hookenv.log(error)
+    helper.render_checks(creds)
 
     set_flag('contrail-service-checks.configured')
     clear_flag('contrail-service-checks.started')

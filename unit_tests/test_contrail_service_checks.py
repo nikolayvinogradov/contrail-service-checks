@@ -5,7 +5,7 @@ import contrail_service_checks as csc
 
 
 @pytest.fixture
-def get_helper(monkeypatch):
+def get_helper(mocker):
 
     config = {
         'os-credentials': '',
@@ -30,11 +30,7 @@ def get_helper(monkeypatch):
     helper.get_os_credentials = Mock(return_value=creds)
     helper.store_keystone_credentials = Mock()
 
-    monkeypatch.setattr(
-        csc,
-        'helper',
-        lambda: helper
-    )
+    mocker.patch('contrail_service_checks.helper', helper)
     return helper
 
 

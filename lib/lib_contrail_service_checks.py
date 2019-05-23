@@ -10,17 +10,19 @@ class CSCCredentialsError(Exception):
     pass
 
 
-class CSCEndpointError(CSCCredentialsError):
-    pass
-
-
 class CSCHelper():
     def __init__(self):
-        self.charm_config = hookenv.config()
+        self._charm_config = None
 
     def store_keystone_credentials(self, creds):
         '''store keystone credentials'''
         unitdata.kv().set('keystonecreds', creds)
+
+    @property
+    def charm_config(self):
+        if self._charm_config is None:
+            self._charm_config = hookenv.config()
+        return self._charm_config
 
     @property
     def oscreds(self):
