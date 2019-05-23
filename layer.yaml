@@ -9,6 +9,5 @@ options:
       - nagios-nrpe-server
       - python3-keystoneclient
       - python3-openstackclient
-      - python-openstackclient
       - python3-requests
       - python3-yaml

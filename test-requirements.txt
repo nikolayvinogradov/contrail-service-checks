@@ -1,4 +1,10 @@
 flake8
 pytest
 pytest-cov
+pytest-mock
+charmhelpers
+charms.reactive
+requests
+requests-mock
+fixture
 git+https://github.com/openstack-charmers/zaza.git#egg=zaza

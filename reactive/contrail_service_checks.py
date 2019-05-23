@@ -11,7 +11,11 @@ from lib_contrail_service_checks import (
 )
 
 CERT_FILE = '/usr/local/share/ca-certificates/openstack-service-checks.crt'
-helper = CSCHelper()
+
+
+def helper():
+    helper = CSCHelper()
+    return helper
 
 
 @when('config.changed')
@@ -55,26 +59,20 @@ def save_creds(keystone):
              'password': keystone.credentials_password(),
              'region': keystone.region(),
              }
-    if keystone.api_version() == '3':
-        api_url = 'v3'
-        try:
-            domain = keystone.domain()
-        except AttributeError:
-            domain = 'service_domain'
-        # keystone relation sends info back with funny names, fix here
-        creds.update({'project_name': keystone.credentials_project(),
-                      'auth_version': '3',
-                      'user_domain_name': domain,
-                      'project_domain_name': domain})
-    else:
-        api_url = 'v2.0'
-        creds['tenant_name'] = keystone.credentials_project()
+    api_url = 'v3'
+    try:
+        domain = keystone.domain()
+    except AttributeError:
+        domain = 'service_domain'
+    creds.update({'project_name': keystone.credentials_project(),
+                  'auth_version': '3',
+                  'domain': domain})
 
     creds['auth_url'] = '{proto}://{host}:{port}/{api_url}'.format(
         proto=keystone.auth_protocol(), host=keystone.auth_host(),
         port=keystone.auth_port(), api_url=api_url)
 
-    helper.store_keystone_credentials(creds)
+    helper().store_keystone_credentials(creds)
     set_flag('contrail-service-checks.stored-creds')
     clear_flag('contrail-service-checks.configured')
 
@@ -95,15 +93,16 @@ def get_credentials():
     keystonecreds relation data.
     """
     try:
-        creds = helper.get_os_credentials()
+        creds = helper().get_os_credentials()
     except CSCCredentialsError as error:
-        creds = helper.get_keystone_credentials()
+        creds = helper().get_keystone_credentials()
         if not creds:
             hookenv.log('render_config: No credentials yet, skipping')
             hookenv.status_set('blocked',
                                'Missing os-credentials vars: {}'.format(error))
             return
-    creds['contrail_analytics_vip'] = helper.charm_config['contrail_analytics_vip']
+    contrail_vip = helper().charm_config['contrail_analytics_vip']
+    creds['contrail_analytics_vip'] = contrail_vip
     return creds
 
 
@@ -131,8 +130,8 @@ def render_config():
         return
 
     # Fix TLS
-    if helper.charm_config['trusted_ssl_ca'].strip():
-        trusted_ssl_ca = helper.charm_config['trusted_ssl_ca'].strip()
+    if helper().charm_config['trusted_ssl_ca'].strip():
+        trusted_ssl_ca = helper().charm_config['trusted_ssl_ca'].strip()
         hookenv.log('Writing ssl ca cert:{}'.format(trusted_ssl_ca))
         cert_content = base64.b64decode(trusted_ssl_ca).decode()
         try:
@@ -151,37 +150,12 @@ def render_config():
                 ' username={}'.format(creds.get('username')))
 
     try:
-        helper.render_checks(creds)
-        set_flag('contrail-service-checks.endpoints.configured')
+        helper().render_checks(creds)
     except CSCEndpointError as error:
         hookenv.log(error)
 
     set_flag('contrail-service-checks.configured')
     clear_flag('contrail-service-checks.started')
-
-
-@when('contrail-service-checks.installed')
-@when('contrail-service-checks.configured')
-@when_not('contrail-service-checks.endpoints.configured')
-def configure_nrpe_endpoints():
-    """Create an NRPE check for each Keystone catalog endpoint.
-
-    Read the Keystone catalog, and create a check for each endpoint listed.
-    If there is a healthcheck endpoint for the API, use that URL. Otherwise,
-    check the url '/'.
-
-    If TLS is enabled, add a check for the cert.
-    """
-    creds = get_credentials()
-    if not creds:
-        return
-
-    try:
-        helper.create_endpoint_checks(creds)
-        set_flag('contrail-service-checks.endpoints.configured')
-        clear_flag('contrail-service-checks.started')
-    except CSCEndpointError as error:
-        hookenv.log(error)
 
 
 @when('contrail-service-checks.configured')
@@ -197,7 +171,6 @@ def do_restart():
 @when('nrpe-external-master.available')
 def do_reconfigure_nrpe():
     clear_flag('contrail-service-checks.configured')
-    clear_flag('contrail-service-checks.endpoints.configured')
 
 
 @when_not('nrpe-external-master.available')
@@ -212,26 +185,8 @@ def missing_nrpe():
 @when('nrpe-external-master.available')
 def parse_hooks():
     if hookenv.hook_name() == 'upgrade-charm':
-        # Check if creds storage needs to be migrated
-        # Old key: keystone-relation-creds
-        # New key: keystonecreds
         kv = unitdata.kv()
         creds = kv.get('keystonecreds')
-        old_creds = kv.get('keystone-relation-creds')
-        if old_creds and not creds:
-            # This set of creds needs an update to a newer format
-            creds = {
-                'username': old_creds['credentials_username'],
-                'password': old_creds['credentials_password'],
-                'project_name': old_creds['credentials_project'],
-                'tenant_name': old_creds['credentials_project'],
-                'user_domain_name': old_creds.get('credentials_user_domain'),
-                'project_domain_name': old_creds.get('credentials_project_domain'),
-            }
-            kv.set('keystonecreds', creds)
-
-        if old_creds:
-            kv.unset('keystone-relation-creds')
-
+        kv.set('keystonecreds', creds)
         # render configs again
         do_reconfigure_nrpe()

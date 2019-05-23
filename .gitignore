@@ -7,3 +7,6 @@ interfaces
 *.pyc
 .stestr
 .coverage
+.vscode
+reports
+.unit-state.db
