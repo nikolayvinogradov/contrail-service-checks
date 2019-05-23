@@ -1,5 +1,8 @@
 
-import contrail_service_checks
+import unittest
 
-def test_dummy():
-    assert True
+
+class MyTest(unittest.TestCase):
+
+    def test_dummy(self):
+        pass
