@@ -7,6 +7,21 @@ install: pip install tox-travis
 env:
   - ENV=lint
   - ENV=unit
+  - ENV=build
+  - ENV=func-smoke
 script:
+  - if [ $ENV = 'func-smoke' ]; then
+       sudo apt remove -y --purge lxd lxd-client;
+       sudo snap install lxd;
+       sudo snap install juju --classic;
+       sudo sh -c 'echo PATH=/snap/bin:$PATH >> /etc/environment';
+       sudo lxd waitready;
+       sudo lxd init --auto;
+       sudo usermod -a -G lxd travis;
+       sudo su travis -c 'juju bootstrap --debug --no-gui localhost';
+       tox -c tox.ini -e build;
+    fi
   - tox -c tox.ini -e $ENV
-
+  - if [ $ENV = 'func-smoke' ]; then
+    sudo su travis -c 'juju status -m $(juju models --format yaml|grep "^- name:.*zaza"|cut -f2 -d/)';
+    fi

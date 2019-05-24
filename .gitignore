@@ -10,3 +10,4 @@ interfaces
 .vscode
 reports
 .unit-state.db
+.local
